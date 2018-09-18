@@ -1,0 +1,1 @@
+# pandoc-base-template
