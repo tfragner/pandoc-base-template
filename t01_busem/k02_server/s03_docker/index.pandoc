@@ -1,0 +1,71 @@
+---
+title: Docker
+---
+
+## Installation
+
+Für die Installation müssen vorab mehrere Pakete installiert werden:
+
+```{#lst:install-docker-prerequisits caption="Docker Abhängigkeiten installieren" .bash}
+sudo yum install -y yum-utils \
+    device-mapper-persistent-data \
+    lvm2
+```
+
+Im nächsten Schritt muss das Docker Repository hinzugefügt werden:
+
+```{#lst:register-docker-repo caption="Docker Repository registrieren" .bash}
+sudo yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+```
+
+Nachfolgend kann Docker installiert werden:
+
+```{#lst:install-docker caption="Docker installieren" .bash}
+sudo yum install -y docker-ce
+```
+
+Docker kann nach der Installation gestartet und getestet werden:
+
+```{#lst:activate-docker caption="Docker Service starten" .bash}
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo docker run --rm hello-world
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+...
+```
+
+Um Docker zu benutzen sind im Normalfall root Rechte notwendig. Um einem Benutzer ebenfalls das Recht zur Verwendung zu geben muss dieser der Gruppe `docker` hinzugefügt werden:
+
+```{#lst:add-to-docker-group caption="Docker Benutzergruppe erweitern" .bash}
+sudo usermod -aG docker $USER
+```
+
+::: {.notebox}
+Nach diesem Schritt muss sich der Benutzer abmelden.
+:::
+
+Nach diesem Schritt können Container auch mit den Rechten des Benutzers gestartet werden:
+
+```{#lst:check-docker-normal-user caption="Docker als Benutzer ausführen" .bash}
+docker run --rm hello-world
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+...
+```
+
+## docker-compose installieren
+
+Docker-compose bietet zusätzliche Möglichkeiten zum Konfigurieren von Containern.
+
+Installation:
+
+```{#lst:docker-compose-install caption="docker-compose installieren" .bash}
+sudo yum install -y epel-release
+sudo yum install -y python-pip
+sudo pip install docker-compose
+```

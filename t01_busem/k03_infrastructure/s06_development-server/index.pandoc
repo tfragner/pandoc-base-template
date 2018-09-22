@@ -1,0 +1,41 @@
+---
+title: Development Server
+---
+
+## Nginx Konfiguration
+
+```yaml
+...
+  deploy:
+    image: nginx
+    restart: always
+    expose:
+      - '80'
+    volumes:
+      - /srv/deploy:/usr/share/nginx/html:ro
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    environment:
+      - VIRTUAL_HOST=*.deploy.home.lan
+...
+```
+
+**default.conf**:
+
+```text
+server {
+    listen 80;
+    server_name ~^(?<sname>.+?).deploy.bitter.at$;
+    root /usr/share/nginx/html/$sname/public;
+
+    index index.html index.htm index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    access_log /var/log/nginx/$sname-access.log;
+    error_log  /var/log/nginx/pages-error.log debug;
+}
+```

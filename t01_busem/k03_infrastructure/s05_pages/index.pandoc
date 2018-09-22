@@ -1,0 +1,25 @@
+---
+title: Gitlab Pages
+---
+
+\label{sec:gitlab-pages}
+
+## Konfiguration
+
+```yaml
+...
+  gitlab:
+  ...
+    environment:
+      - VIRTUAL_HOST=gitlab.home.lan,*.pages.home.lan
+      ...
+      - GITLAB_PAGES_ENABLED=true
+      - GITLAB_PAGES_DOMAIN=pages.home.lan
+      - GITLAB_PAGES_PORT=80
+...
+```
+: Gitlab Pages Konfiguration {#lst:gitlab-pages-config}
+
+## Testen
+
+<https://gitlab.com/pages/hugo.git> importieren

@@ -1,0 +1,23 @@
+---
+title: Software - Infrastruktur
+---
+
+\chapter{Software - Infrastruktur}
+\label{sec:infrastruktur}
+
+Gitlab ist ähnlich wie Github und bietet unter Verwendung von Git die Möglichkeit zur Source Code Verwaltung.
+
+Gitlab besteht in der vorgestellten Konfiguration aus mehreren Komponenten:
+
+- Nginx Reverse Proxy
+- Gitlab
+    - Redis Server
+    - Postgresql
+    - Gitlab Server
+    - Docker Registry
+- Deployment Server
+- Production Servers
+
+Die Container verwenden Volumes zur persistenten Sicherung der Daten. Diese Volumes verweisen auf Verzeichnisse des Servers. Durch die Verwendung von Volumes wird sichergestellt, dass die Daten auch im Fall einer Löschung der Container erhalten bleiben. Eine Löschung ist z.B. beim Update auf neuere Versionen notwendig. Alle persistenten Daten werden in Ordnern unterhalb von `/srv` abgelegt. Die Container erzeugen die notwendigen Verzeichnisse beim ersten Start sofern diese nicht bereits vorhanden sind.
+
+!!!!! lokales Verzeichnis

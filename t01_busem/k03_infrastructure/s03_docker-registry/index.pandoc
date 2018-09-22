@@ -1,0 +1,99 @@
+---
+title: Docker Registry
+---
+
+\label{sec:docker-registry}
+
+Um Gitlab in Verbindung mit einer Docker Registry zu verwenden sind mehrere Anpassungen notwendig. Um eine Kommunikation zwischen Gitlab und der Registry zu erlauben ist ein gemeinsamer Schlüssel erforderlich. Das entsprechende Verzeichnis muss sowhl in Gitlab als auch in der Registry eingebunden werden. Der In dieser Konfiguration verwendete Pfad ist `/srv/gitlab-prod/certs`. Während der Erzeugung muss ein Passwort für einen Private Key definiert werden welche anschließend für die Erzeugung eines Zertifakts-Requests benötigt wird. Die Abfragen im ersten Schritt können alle mit Enter bestätigt werden.
+
+```{#lst:create-docker-key caption="Docker Registry Key erzeugen" .bash}
+sudo su
+mkdir -p /srv/gitlab-prod/certs
+cd /srv/gitlab-prod/certs
+openssl req -new -newkey rsa:4096 > registry.csr
+openssl rsa -in privkey.pem -out registry.key
+openssl x509 -in registry.csr -out registry.crt -req -signkey registry.key -days 10000
+exit
+```
+
+```{#lst:gitlab-docker-configuration caption="Gitlab Docker Registry Konfiguration" .yaml}
+...
+  gitlab:
+    volumes:
+    - /srv/gitlab-prod/gitlab:/home/git/data:Z
+    - /srv/gitlab-prod/certs:/certs
+  ...
+    - GITLAB_REGISTRY_ENABLED=true
+    - GITLAB_REGISTRY_HOST=registry.home.lan
+    - GITLAB_REGISTRY_PORT=
+    - GITLAB_REGISTRY_API_URL=http://registry:5000
+    - GITLAB_REGISTRY_KEY_PATH=/certs/registry.key
+  ...
+  registry:
+    image: registry:2
+    restart: always
+    expose:
+      - "5000"
+    volumes:
+      - /srv/gitlab-prod/gitlab/shared/registry:/registry
+      - /srv/gitlab-prod/certs:/certs
+    environment:
+      - VIRTUAL_HOST=registry.home.lan
+      - VIRTUAL_PORT=5000
+      - REGISTRY_LOG_LEVEL=info
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/registry
+      - REGISTRY_AUTH_TOKEN_REALM=http://gitlab.home.lan/jwt/auth
+      - REGISTRY_AUTH_TOKEN_SERVICE=container_registry
+      - REGISTRY_AUTH_TOKEN_ISSUER=gitlab-issuer
+      - REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE=/certs/registry.crt
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+```
+
+| Zeile | Parameter | Beschreibung |
+|-|-----|------|
+|5|volume|Verweise auf das zuvor erzeugt `certs` Verzeichnis|
+|7|GITLAB_REGISTRY_ENABLED|Änderung auf `true`|
+|8|GITLAB_REGISTRY_HOST|gegebenfalls die Url anpassen|
+|22|GITLAB_REGISTRY_HOST|gegebenfalls die Url anpassen|
+|26|REGISTRY_AUTH_TOKEN_REALM|gegebenfalls die Url anpassen|
+: Anpassungen für Docker Registry
+
+::: {.notebox}
+In Zeile 26 darf nur gitlab.home.lan angepasst werden.
+:::
+
+## Client Konfiguration
+
+Da die Registry nicht über HTTPS läuft muss auf Clientmaschinen die Konfiguration von Docker geändert werden. Die soeben erzeugte Registry muss auf dem Client als insecure eingetragen werden.
+
+Dazu muss unter Centos in der Datei `/etc/docker/daemon.json` folgender Eintrag hinzugefügt werden:
+
+```json
+{
+  "insecure-registries" : ["registry.home.lan"]
+}
+```
+
+Anschließend kann mit einem login auf die Registry fotgesetzt werden. Benutzername und Passwort sind ident mit den Gitlab Zugangsdaten.
+
+```bash
+docker login registry.home.lan
+```
+
+## Testen
+
+Zum Testen der Registry muss in Gitlab ein Projekt angelegt werden. Hierzu kann für den Benutzer `root` ein Projekt mit dem Namen `test` erstellt werden:
+
+```bash
+docker pull hello-world:latest
+docker tag hello-world:latest registry.home.lan/root/test
+docker push registry.home.lan/root/test
+```
+
+Der Befehl sollte folgende Ausgabe produzieren:
+
+```text
+The push refers to repository [registry.home.lan/root/test]
+428c97da766c: Pushed 
+latest: digest: sha256:1a6fd470b9ce10849be79e99529a88371dff60c60aab424c077007f6979b4812 size: 524
+```

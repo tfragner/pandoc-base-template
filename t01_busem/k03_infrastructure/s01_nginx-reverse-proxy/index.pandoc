@@ -1,0 +1,55 @@
+---
+title: Nginx Reverse Proxy
+---
+
+Alle Webserver die in dieser Konfiguration verwendet werden befinden sich hinter einem Nginx Reverse Proxy. Zur Realisierung des Proxy wird das Docker Image von JWilder[^1] verwendet. Dieser Container durchsucht alle laufenden Container nach Environment Variablen die sie als Webserver ausweisen.
+
+[^1]: <https://github.com/jwilder/nginx-proxy>
+
+Folgende Server befinden sich hinter dem Reverse Proxy:
+
+- Gitlab Server
+    - Gitlab Frontend
+    - Gitlab Pages
+- Docker Registry
+- Development Server
+- Production Server
+
+Jeder der oben genannten Server hat in der Docker Konfiguration Umgebungsvariablen definiert:
+
+- **VIRTUAL_HOST**: Definiert den Hostnamen unter dem der Server erreichbar ist:
+- **VIRTUAL_PORT**: Definiert den Port unter dem der jeweilige Server innerhalb des Containers läuft. Alle Ports werden auf Port 80 gemappt.
+
+| Server             | VIRTUAL_HOST                     | VIRTUAL_PORT |
+| ------------------ | -------------------------------- | ------------ |
+| Gitlab             | gitlab.home.lan,*.pages.home.lan | 80           |
+| Docker Registry    | registry.home.lan                | 5000         |
+| Develpoment Server | *.deploy.home.lan                | 80           |
+| Production Server  | doku.home.lan                    | 80           |
+: Virtual Hosts
+
+Bevor mit der Konfiguration der Docker Container begonnen werden kann muss ein Docker Netzwerk für die Container erstellt werden:
+
+```{#lst:create-docker-network caption="Docker Netzwerk erzeugen" .bash}
+docker network create webservices
+```
+
+```{#lst:nginx-configuration caption="Nginx Docker Konfiguration" .yaml}
+...
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    restart: always
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx_reverse_proxy_settings.conf:/etc/nginx/conf.d/nginx_reverse_proxy_settings.conf
+...
+```
+
+In der Konfiguration wird die Nginx Konfigurationsdatei `nginx_reverse_proxy_settings.conf` eingebunden. Diese Datei beinhalten einen Eintrag der die Dateigrößengrenze von Nginx erhöht:
+
+```{#lst:nginx-base-config caption="Nginx Reverse Proxy Konfiguration" .yaml}
+client_max_body_size 10000m;
+```

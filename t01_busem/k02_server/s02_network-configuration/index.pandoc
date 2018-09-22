@@ -1,0 +1,73 @@
+---
+title: Netzwerk-Konfiguration
+---
+
+In den folgenden Kapitel werden die notwendigen Netzwerkeinstellungen beschrieben.
+
+## DNS Einstellungen
+
+Um ein funktionierendes System zu gewährleisten ist es notwendig DNS Einträge für die verschiedenen Dienste zu setzen.
+
+Die Domain in dieser Installation ist `.home.lan`. Alle Dienste laufen unter dieser Domain. Folgende DNS Einträge werden in den folgenden Kapiteln verwendet:
+
+| DNS Hostname       | Ziel               | Typ   |
+| ------------------ | ------------------ | ----- |
+| docserver.home.lan | 192.168.1.50       | A     |
+| registry.home.lan  | docserver.home.lan | CNAME |
+| gitlab.home.lan    | docserver.home.lan | CNAME |
+| *.pages.home.lan   | docserver.home.lan | CNAME |
+| *.deploy.home.lan  | docserver.home.lan | CNAME |
+| doku.home.lan      | docserver.home.lan | CNAME |
+: DNS Einträge
+
+## Hostname setzen
+
+```sh
+hostnamectl set-hostname docserver
+```
+: Hostnamen setzen {#lst:set-hostname}
+
+Sofern der DNS Server richtig konfiguriert wurde sollte sollte der Befehl `hostname -f` den FQDN liefern:
+
+```sh
+hostname -f
+# docserver.home.lan
+```
+
+: FQDN überprüfen {#lst:check-fqdn}
+
+Die Ausgabe des Befehls `hostname -d` sollte den Domain Anteil liefern:
+
+```bash
+hostname -d
+home.lan
+```
+
+: Domain überprüfen {#lst:check-dn}
+
+## Firewall deaktivieren
+
+Um Probleme die durch eine aktive Firewall verursacht werden zu umgehen sollte diese deaktiviert werden. Es wird davon ausgegangen, dass dem Server eine Firewall vorgeschalten ist.
+
+**Stoppen der Firewall**:
+
+```{#lst:stop-firewall caption="Firewall deaktivieren" .bash}
+sudo systemctl stop firewalld
+```
+
+**Deaktivieren der Firewall**:
+
+```{#lst:disable-firewall caption="Firewall stoppen" .bash}
+sudo systemctl disable firewalld
+```
+
+**Status der Firewall**:
+
+```{#lst:firewall-status caption="Firewall Status überprüfen" .bash}
+sudo systemctl status firewalld
+
+firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; disabled; vendor preset: enabled)
+   Active: inactive (dead)
+    Docs: man:firewalld(1)
+```
