@@ -1,0 +1,13 @@
+---
+title: Centos Installation
+---
+
+Das Betriebssystem für die vorgestellte Lösung ist **Centos** in Version **7.5.1804**. Zur Überprüfung der installierten Version kann der Befehl `cat /etc/centos-release` verwendet werden:
+
+```sh
+cat /etc/centos-release
+# CentOS Linux release 7.5.1804 (Core)
+```
+: Centos Version abfragen {#lst:get-centos-version}
+
+Die in den folgenden Kapiteln vorgestellten Installationsschritte wurden in einer Virtuellen Maschine unter MacOS und der Anwendung Parallels Desktop durchgeführt und getestet.

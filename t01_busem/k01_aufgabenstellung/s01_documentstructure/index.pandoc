@@ -1,0 +1,10 @@
+---
+title: Abschnitt 1
+author: Thomas Fragner
+---
+
+Das Dokument ist in mehreren Teilen aufgebaut.
+
+- Teil @sec:server beschreibt die Einrichtung des Servers auf Basis von Centos.
+- Teil @sec:infrastruktur beschreibt die Installation der notwendigen Software.
+- Teil @sec:docker-images beschreibt die verwendeten Docker Container.
