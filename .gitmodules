@@ -7,3 +7,6 @@
 [submodule "bin"]
 	path = bin
 	url = https://github.com/tfragner/pandoc-scripts.git
+[submodule "t02_ce-scriptum"]
+	path = t02_ce-scriptum
+	url = ssh://gitolite3@140.78.73.14:2122/skriptum_ce

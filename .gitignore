@@ -3,3 +3,6 @@ venv
 TEMP*
 *.pdf
 tex2pdf*
+*.tex
+index.html
+book*.html
